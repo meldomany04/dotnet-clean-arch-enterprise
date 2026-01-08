@@ -1,0 +1,68 @@
+﻿using BaseApp.Application.Commands.Products.CreateProduct;
+using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Queries.Products.GetAllProducts;
+using BaseApp.Application.Queries.Products.GetProducts;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace BaseApp.API.Controllers
+{
+    [ApiController]
+    [Route("api/products")]
+    public class ProductsController : BaseApiController
+    {
+        private readonly IMediator _mediator;
+        private readonly ICurrentUserService _currentUser;
+
+        public ProductsController(IMediator mediator, ICurrentUserService currentUser)
+        {
+            _mediator = mediator;
+            _currentUser = currentUser;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateProductCommand command)
+        {
+            var id = await _mediator.Send(command);
+            return Ok(id);
+        }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _mediator.Send(new GetAllProductsQuery());
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get([FromQuery] GetProductsQuery query)
+        {
+            var result = await _mediator.Send(query);
+
+            Response.Headers.Add("X-Total-Count", result.TotalRecords.ToString());
+
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult Me()
+        {
+            return Ok(new
+            {
+                _currentUser.UserId,
+                _currentUser.UserName,
+                _currentUser.Email,
+                _currentUser.DisplayName,
+                _currentUser.FirstName,
+                _currentUser.LastName,
+                _currentUser.Roles,
+                _currentUser.IsAuthenticated
+            });
+        }
+
+    }
+
+}

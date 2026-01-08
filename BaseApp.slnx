@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BaseApp.API/BaseApp.API.csproj" Id="f21161f1-b616-4081-8714-0eb64400984c" />
+  <Project Path="BaseApp.Application/BaseApp.Application.csproj" Id="d126cdb1-b809-41dc-8476-80d0e1a7144d" />
+  <Project Path="BaseApp.Domain/BaseApp.Domain.csproj" />
+  <Project Path="BaseApp.Infrastructure/BaseApp.Infrastructure.csproj" Id="7b2c01bb-a78a-42fc-b1da-0f3965ddc5a4" />
+</Solution>
