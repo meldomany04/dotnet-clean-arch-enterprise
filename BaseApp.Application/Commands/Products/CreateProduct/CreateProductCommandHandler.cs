@@ -29,8 +29,8 @@ namespace BaseApp.Application.Commands.Products.CreateProduct
 
         public async Task<int> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
-            throw new NotFoundException(_localizer["ProductNotFound"], 1);
-            throw new NotFoundException("not found product", 1);
+            //throw new NotFoundException(_localizer["ProductNotFound"], 1);
+            //throw new NotFoundException("not found product", 1);
             //var product = new Product
             //{
             //    Name = request.Name,
