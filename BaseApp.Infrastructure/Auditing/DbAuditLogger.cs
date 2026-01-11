@@ -1,39 +1,53 @@
 ﻿using BaseApp.Application.Common.Auditing;
 using BaseApp.Infrastructure.Persistence;
 using BaseApp.Infrastructure.Persistence.Entities;
+using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
 namespace BaseApp.Infrastructure.Auditing
 {
     public class DbAuditLogger : IAuditLogger
     {
-        private readonly AppDbContext _context;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public DbAuditLogger(AppDbContext context)
+        public DbAuditLogger(IServiceScopeFactory scopeFactory)
         {
-            _context = context;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task LogAsync(AuditLogEntry entry)
         {
-            var log = new AuditLog
+            var sw = Stopwatch.StartNew();
+            try
             {
-                HttpMethod = entry.HttpMethod,
-                Path = entry.Path,
-                QueryString = entry.QueryString,
-                StatusCode = entry.StatusCode,
-                IsSuccess = entry.IsSuccess,
-                UserId = entry.UserId,
-                UserName = entry.UserName,
-                RequestBody = entry.RequestBody,
-                ResponseBody = entry.ResponseBody,
-                Exception = entry.Exception,
-                CorrelationId = entry.CorrelationId,
-                DurationMs = entry.DurationMs,
-                CreatedAtUtc = DateTime.UtcNow
-            };
+                using var scope = _scopeFactory.CreateScope();
+                
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                
+                var log = new AuditLog
+                {
+                    HttpMethod = entry.HttpMethod,
+                    Path = entry.Path,
+                    QueryString = entry.QueryString,
+                    StatusCode = entry.StatusCode,
+                    IsSuccess = entry.IsSuccess,
+                    UserId = entry.UserId,
+                    UserName = entry.UserName,
+                    RequestBody = entry.RequestBody,
+                    ResponseBody = entry.ResponseBody,
+                    Exception = entry.Exception,
+                    CorrelationId = entry.CorrelationId,
+                    DurationMs = entry.DurationMs,
+                    CreatedAtUtc = DateTime.UtcNow
+                };
 
-            _context.AuditLogs.Add(log);
-            await _context.SaveChangesAsync();
+                context.AuditLogs.Add(log);
+
+                var saved = await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
 

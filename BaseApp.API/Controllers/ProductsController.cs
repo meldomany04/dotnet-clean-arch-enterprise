@@ -1,4 +1,5 @@
 ﻿using BaseApp.Application.Commands.Products.CreateProduct;
+using BaseApp.Application.Commands.Products.UpdateProduct;
 using BaseApp.Application.Common.Interfaces;
 using BaseApp.Application.Queries.Products.GetAllProducts;
 using BaseApp.Application.Queries.Products.GetProducts;
@@ -24,6 +25,13 @@ namespace BaseApp.API.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProductCommand command)
+        {
+            var id = await _mediator.Send(command);
+            return Ok(id);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update(UpdateProductCommand command)
         {
             var id = await _mediator.Send(command);
             return Ok(id);

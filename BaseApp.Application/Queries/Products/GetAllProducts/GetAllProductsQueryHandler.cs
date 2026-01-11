@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using BaseApp.Application.Common.Exceptions;
 using BaseApp.Application.Common.Interfaces;
 using BaseApp.Application.Common.Responses;
 using BaseApp.Application.DTOs;

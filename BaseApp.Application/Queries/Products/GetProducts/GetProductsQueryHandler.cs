@@ -1,4 +1,5 @@
-﻿using BaseApp.Application.Common.Exceptions;
+﻿using AutoMapper;
+using BaseApp.Application.Common.Exceptions;
 using BaseApp.Application.Common.Extentions;
 using BaseApp.Application.Common.Interfaces;
 using BaseApp.Application.Common.Responses;
@@ -12,10 +13,12 @@ namespace BaseApp.Application.Queries.Products.GetProducts
     public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PagedResponse<ProductDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public GetProductsQueryHandler(IUnitOfWork unitOfWork)
+        public GetProductsQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<PagedResponse<ProductDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
@@ -36,12 +39,14 @@ namespace BaseApp.Application.Queries.Products.GetProducts
             var (data, totalRecords) = await _unitOfWork.Repository<Product>()
                 .GetPagedAsync(request.PageNumber, request.PageSize, request.SortBy, request.SortDescending, filter);
 
-            var dtoData = data.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price
-            });
+            var dtoData = _mapper.Map<List<ProductDto>>(data);
+
+            //var dtoData = data.Select(p => new ProductDto
+            //{
+            //    Id = p.Id,
+            //    Name = p.Name,
+            //    Price = p.Price
+            //});
 
             return PagedResponse<ProductDto>.Create(dtoData, request.PageNumber, request.PageSize, totalRecords);
 

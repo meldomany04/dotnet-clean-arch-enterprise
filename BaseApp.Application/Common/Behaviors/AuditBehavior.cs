@@ -29,6 +29,10 @@ namespace BaseApp.Application.Common.Behaviors
             try
             {
                 var response = await next();
+
+                stopwatch.Stop();
+                await LogAuditAsync(context, stopwatch, statusCode, success, exception);
+
                 return response;
             }
             catch (AppException ex)
@@ -36,6 +40,10 @@ namespace BaseApp.Application.Common.Behaviors
                 success = false;
                 statusCode = ex.StatusCode;
                 exception = ex.ToString();
+
+                stopwatch.Stop();
+                await LogAuditAsync(context, stopwatch, statusCode, success, exception);
+
                 throw;
             }
             catch (Exception ex)
@@ -43,30 +51,46 @@ namespace BaseApp.Application.Common.Behaviors
                 success = false;
                 statusCode = StatusCodes.Status500InternalServerError;
                 exception = ex.ToString();
+
+                stopwatch.Stop();
+                await LogAuditAsync(context, stopwatch, statusCode, success, exception);
+
                 throw;
             }
-            finally
+        }
+
+        private async Task LogAuditAsync(
+            HttpContext context,
+            Stopwatch stopwatch,
+            int statusCode,
+            bool success,
+            string? exception)
+        {
+
+            var audit = new AuditLogEntry
             {
-                stopwatch.Stop();
+                HttpMethod = context.Items["Audit_Method"]?.ToString(),
+                Path = context.Items["Audit_Path"]?.ToString(),
+                StatusCode = statusCode,
+                IsSuccess = success,
+                UserId = "_currentUser.UserId",
+                UserName = "_currentUser.UserName",
+                Exception = exception,
+                DurationMs = stopwatch.ElapsedMilliseconds,
+                CorrelationId = context.TraceIdentifier,
+                RequestBody = context.Items["Audit_Request_Body"]?.ToString(),
+                QueryString = context.Items["Audit_Query_String"]?.ToString()
+            };
 
-                var audit = new AuditLogEntry
-                {
-                    HttpMethod = context.Items["Audit_Method"]?.ToString(),
-                    Path = context.Items["Audit_Path"]?.ToString(),
-                    StatusCode = statusCode,
-                    IsSuccess = success,
-                    UserId = "_currentUser.UserId",
-                    UserName = "_currentUser.UserName",
-                    Exception = exception,
-                    DurationMs = stopwatch.ElapsedMilliseconds,
-                    CorrelationId = context.TraceIdentifier,
-                    RequestBody = context.Items["Audit_Request_Body"]?.ToString(),
-                    QueryString = context.Items["Audit_Query_String"]?.ToString()
-                };
-
+            try
+            {
                 await _auditLogger.LogAsync(audit);
             }
+            catch (Exception auditEx)
+            {
+            }
         }
+
     }
 
 }

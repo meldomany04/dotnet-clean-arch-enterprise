@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace BaseApp.Infrastructure.Persistence
 {
@@ -11,6 +12,7 @@ namespace BaseApp.Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             ApplySoftDeleteFilter(modelBuilder);
             base.OnModelCreating(modelBuilder);
         }

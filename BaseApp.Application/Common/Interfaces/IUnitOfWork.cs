@@ -4,5 +4,6 @@
     {
         IGenericRepository<T> Repository<T>() where T : class;
         Task<int> SaveChangesAsync();
+        void SetOriginalRowVersion<T>(T entity, byte[] originalRowVersion) where T : class;
     }
 }
