@@ -4,9 +4,12 @@ using BaseApp.Application.Common;
 using BaseApp.Application.Common.Interfaces;
 using BaseApp.Infrastructure.Common;
 using BaseApp.Infrastructure.Realtime;
+using FluentValidation.AspNetCore;
 using Hangfire;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -44,7 +47,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
 });
 
 builder.Services.AddControllers();
-
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var signingKey = await GetSigningKeyAsync();
@@ -89,6 +92,27 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+builder.Services.AddLocalization();
+
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("ar"),
+    new CultureInfo("fr")
+};
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+
+    options.RequestCultureProviders = new[]
+    {
+        new AcceptLanguageHeaderRequestCultureProvider()
+    };
+});
+
 
 builder.Services.AddHangfire(config =>
 {
@@ -131,6 +155,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRequestLocalization();
+app.UseStaticFiles();
 
 app.UseCors("AllowAll");
 app.UseAuthentication();

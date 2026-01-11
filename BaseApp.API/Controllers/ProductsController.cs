@@ -3,9 +3,12 @@ using BaseApp.Application.Commands.Products.UpdateProduct;
 using BaseApp.Application.Common.Interfaces;
 using BaseApp.Application.Queries.Products.GetAllProducts;
 using BaseApp.Application.Queries.Products.GetProducts;
+using BaseApp.Application.Resources;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace BaseApp.API.Controllers
@@ -15,11 +18,13 @@ namespace BaseApp.API.Controllers
     public class ProductsController : BaseApiController
     {
         private readonly IMediator _mediator;
+        private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ICurrentUserService _currentUser;
 
-        public ProductsController(IMediator mediator, ICurrentUserService currentUser)
+        public ProductsController(IMediator mediator, IStringLocalizer<SharedResource> localizer, ICurrentUserService currentUser)
         {
             _mediator = mediator;
+            _localizer = localizer;
             _currentUser = currentUser;
         }
 
