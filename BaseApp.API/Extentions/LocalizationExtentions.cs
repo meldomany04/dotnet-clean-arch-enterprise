@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace BaseApp.API.Extentions
 {
-    public static class LocalizationServicesExtention
+    public static class LocalizationExtentions
     {
         public static IServiceCollection ConfigureLocalization(this IServiceCollection services)
         {

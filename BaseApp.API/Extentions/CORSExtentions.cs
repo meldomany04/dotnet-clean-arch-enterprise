@@ -1,6 +1,6 @@
 ﻿namespace BaseApp.API.Extentions
 {
-    public static class CORSServicesExtention
+    public static class CORSExtentions
     {
         public static IServiceCollection ConfigureCors(this IServiceCollection services)
         {

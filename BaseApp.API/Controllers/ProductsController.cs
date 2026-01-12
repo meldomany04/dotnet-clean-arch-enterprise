@@ -8,14 +8,12 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using System.Globalization;
-using System.Security.Claims;
 
 namespace BaseApp.API.Controllers
 {
     [ApiController]
     [Route("api/products")]
-    public class ProductsController : BaseApiController
+    public class ProductsController : ControllerBase
     {
         private readonly IMediator _mediator;
         private readonly IStringLocalizer<SharedResource> _localizer;

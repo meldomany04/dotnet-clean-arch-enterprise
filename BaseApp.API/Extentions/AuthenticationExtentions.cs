@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BaseApp.API.Extentions
 {
-    public static class AuthenticationServicesExtention
+    public static class AuthenticationExtentions
     {
         public static IServiceCollection ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
         {

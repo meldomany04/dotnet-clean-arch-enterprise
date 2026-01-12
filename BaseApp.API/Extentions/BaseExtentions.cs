@@ -4,7 +4,7 @@ using FluentValidation.AspNetCore;
 
 namespace BaseApp.API.Extentions
 {
-    public static class BaseServicesExtention
+    public static class BaseExtentions
     {
         public static IServiceCollection ConfigureBaseServices(this IServiceCollection services)
         {

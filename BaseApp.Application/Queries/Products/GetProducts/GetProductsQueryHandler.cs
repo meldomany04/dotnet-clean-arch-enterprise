@@ -26,15 +26,10 @@ namespace BaseApp.Application.Queries.Products.GetProducts
             //throw new UnauthorizedException();
             Expression<Func<Product, bool>> filter = p => true;
 
-            if (!string.IsNullOrEmpty(request.Name))
-                filter = filter.AndAlso(p => p.Name != null && p.Name.Contains(request.Name));
-
-            if (request.MinPrice.HasValue)
-                filter = filter.AndAlso(p => p.Price >= request.MinPrice.Value);
-
-            if (request.MaxPrice.HasValue)
-                filter = filter.AndAlso(p => p.Price <= request.MaxPrice.Value);
-
+            filter = filter
+                .AndAlsoIf(!string.IsNullOrEmpty(request.Name), p => p.Name != null && p.Name.Contains(request.Name))
+                .AndAlsoIf(request.MinPrice.HasValue, p => p.Price >= request.MinPrice)
+                .AndAlsoIf(request.MaxPrice.HasValue, p => p.Price <= request.MaxPrice);
 
             var (data, totalRecords) = await _unitOfWork.Repository<Product>()
                 .GetPagedAsync(request.PageNumber, request.PageSize, request.SortBy, request.SortDescending, filter);

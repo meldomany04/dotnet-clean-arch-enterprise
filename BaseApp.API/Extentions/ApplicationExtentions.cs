@@ -3,7 +3,7 @@ using BaseApp.Infrastructure.Common;
 
 namespace BaseApp.API.Extentions
 {
-    public static class ApplicationServicesExtention
+    public static class ApplicationExtentions
     {
         public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {

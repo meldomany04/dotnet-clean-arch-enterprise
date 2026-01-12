@@ -2,7 +2,7 @@
 
 namespace BaseApp.API.Extentions
 {
-    public static class HangfireServicesExtention
+    public static class HangfireExtentions
     {
         public static IServiceCollection ConfigureHangfire(this IServiceCollection services, IConfiguration configuration)
         {
