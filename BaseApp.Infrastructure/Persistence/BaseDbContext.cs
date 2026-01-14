@@ -8,8 +8,9 @@ namespace BaseApp.Infrastructure.Persistence
 {
     public class BaseDbContext : DbContext
     {
-        protected BaseDbContext(DbContextOptions options) : base(options) { }
-
+        protected BaseDbContext(DbContextOptions options) : base(options)
+        {
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
@@ -53,16 +54,6 @@ namespace BaseApp.Infrastructure.Persistence
             }
 
             return await base.SaveChangesAsync(cancellationToken);
-        }
-
-        public override EntityEntry Remove(object entity)
-        {
-            if (entity is ISoftDelete softDeleteEntity)
-            {
-                softDeleteEntity.IsDeleted = true;
-                return Update(entity);
-            }
-            return base.Remove(entity);
         }
     }
 }

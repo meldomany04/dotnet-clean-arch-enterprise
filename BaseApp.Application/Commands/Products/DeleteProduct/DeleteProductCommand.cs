@@ -1,6 +1,13 @@
-﻿using MediatR;
+﻿using BaseApp.Application.Common.Attributes;
+using MediatR;
 
 namespace BaseApp.Application.Commands.Products.DeleteProduct
 {
-    public record DeleteProductCommand(int Id, byte[] RowVersion) : IRequest<int>;
+    public class DeleteProductCommand : IRequest<int>
+    {
+        public int Id { get; set; }
+
+        [AutoBindRowVersion]
+        public byte[] RowVersion { get; set; }
+    }
 }

@@ -5,6 +5,7 @@ using BaseApp.Application.Common.Realtime;
 using BaseApp.Infrastructure.Auditing;
 using BaseApp.Infrastructure.BackgroundJobs;
 using BaseApp.Infrastructure.Persistence;
+using BaseApp.Infrastructure.Persistence.Interceptors;
 using BaseApp.Infrastructure.Realtime;
 using BaseApp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,8 @@ namespace BaseApp.Infrastructure.Common
             services.AddScoped<INotificationHub, NotificationHubAdapter>();
 
             services.AddScoped<IAuditLogger, DbAuditLogger>();
+
+            services.AddScoped<ConcurrencyInterceptor>();
 
             return services;
         }

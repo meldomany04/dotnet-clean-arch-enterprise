@@ -1,4 +1,5 @@
 ﻿using BaseApp.Application.Commands.Products.CreateProduct;
+using BaseApp.Application.Commands.Products.DeleteProduct;
 using BaseApp.Application.Commands.Products.UpdateProduct;
 using BaseApp.Application.Common.Interfaces;
 using BaseApp.Application.Queries.Products.GetAllProducts;
@@ -56,6 +57,14 @@ namespace BaseApp.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id, [FromQuery] string rowVersion)
+        {
+            await _mediator.Send(new DeleteProductCommand { Id = id, RowVersion = Convert.FromBase64String(rowVersion) });
+            return NoContent();
+        }
+
 
         [Authorize]
         [HttpGet("me")]

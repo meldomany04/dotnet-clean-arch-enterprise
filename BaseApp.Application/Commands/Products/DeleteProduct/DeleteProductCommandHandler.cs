@@ -20,6 +20,7 @@ namespace BaseApp.Application.Commands.Products.DeleteProduct
                 throw new NotFoundException("There is no prodct with this Id", request.Id);
 
             _unitOfWork.Repository<Product>().Remove(productDetails);
+            await _unitOfWork.SaveChangesAsync();
             return request.Id;
         }
     }

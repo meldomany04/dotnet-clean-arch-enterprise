@@ -28,8 +28,7 @@ namespace BaseApp.Application.Commands.Products.UpdateProduct
                 throw new NotFoundException("There is no product with the same Id", request.Id);
 
             _mapper.Map(request, productDetails);
-
-            _unitOfWork.SetOriginalRowVersion(productDetails, request.RowVersion);
+            productDetails.RowVersion = request.RowVersion;
 
             _unitOfWork.Repository<Product>().Update(productDetails);
             await _unitOfWork.SaveChangesAsync();

@@ -1,4 +1,5 @@
 ﻿using BaseApp.Application.Common.Interfaces;
+using BaseApp.Domain.Common;
 using BaseApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -21,8 +22,6 @@ namespace BaseApp.Infrastructure.Repositories
         public async Task AddAsync(T entity) => await _context.Set<T>().AddAsync(entity);
 
         public void Update(T entity) => _context.Set<T>().Update(entity);
-
-        public void Remove(T entity) => _context.Set<T>().Remove(entity);
 
         public IQueryable<T> GetAll() => _context.Set<T>().AsNoTracking();
 
@@ -58,6 +57,27 @@ namespace BaseApp.Infrastructure.Repositories
             return (data, totalRecords);
         }
 
+
+        public void Remove(T entity)
+        {
+            if (entity is ISoftDelete softDeleteEntity)
+            {
+                softDeleteEntity.IsDeleted = true;
+                var entry = _context.Entry(entity);
+
+                if (entry.State == EntityState.Detached)
+                {
+                    _context.Set<T>().Attach(entity);
+                    entry = _context.Entry(entity);
+                }
+
+                entry.State = EntityState.Modified;
+            }
+            else
+            {
+                _context.Set<T>().Remove(entity);
+            }
+        }
     }
 
 }
