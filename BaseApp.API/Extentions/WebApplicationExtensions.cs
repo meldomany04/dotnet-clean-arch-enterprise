@@ -1,4 +1,5 @@
-﻿using BaseApp.API.Middlewares;
+﻿using Asp.Versioning.ApiExplorer;
+using BaseApp.API.Middlewares;
 using BaseApp.Infrastructure.Realtime;
 using Hangfire;
 using Serilog;
@@ -7,7 +8,7 @@ namespace BaseApp.API.Extentions
 {
     public static class WebApplicationExtensions
     {
-        public static WebApplication ConfigureMiddlewarePipeline(this WebApplication app)
+        public static WebApplication ConfigureMiddlewarePipeline(this WebApplication app, IApiVersionDescriptionProvider provider)
         {
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseMiddleware<RequestContextMiddleware>();
@@ -18,7 +19,15 @@ namespace BaseApp.API.Extentions
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(options =>
+                {
+                    foreach (var description in provider.ApiVersionDescriptions)
+                    {
+                        options.SwaggerEndpoint(
+                            $"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+                    }
+                });
+
             }
 
             app.UseHttpsRedirection();

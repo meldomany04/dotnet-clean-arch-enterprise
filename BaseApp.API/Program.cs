@@ -1,4 +1,5 @@
-﻿using BaseApp.API.Extentions;
+﻿using Asp.Versioning.ApiExplorer;
+using BaseApp.API.Extentions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,8 @@ builder.Services.ConfigureApplicationServices(builder.Configuration);
 
 var app = builder.Build();
 
-app.ConfigureMiddlewarePipeline();
+var apiVersionDescriptionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+app.ConfigureMiddlewarePipeline(apiVersionDescriptionProvider);
 app.ConfigureEndpoints();
 
 app.Run();
