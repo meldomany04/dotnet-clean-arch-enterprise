@@ -82,13 +82,7 @@ namespace BaseApp.Application.Common.Behaviors
                 QueryString = context.Items["Audit_Query_String"]?.ToString()
             };
 
-            try
-            {
-                await _auditLogger.LogAsync(audit);
-            }
-            catch (Exception auditEx)
-            {
-            }
+            await _auditLogger.LogAsync(audit);
         }
 
     }

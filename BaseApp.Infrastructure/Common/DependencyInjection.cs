@@ -4,6 +4,7 @@ using BaseApp.Application.Common.Interfaces;
 using BaseApp.Application.Common.Realtime;
 using BaseApp.Infrastructure.Auditing;
 using BaseApp.Infrastructure.BackgroundJobs;
+using BaseApp.Infrastructure.Caching;
 using BaseApp.Infrastructure.Persistence;
 using BaseApp.Infrastructure.Persistence.Interceptors;
 using BaseApp.Infrastructure.Realtime;
@@ -31,6 +32,23 @@ namespace BaseApp.Infrastructure.Common
 
             services.AddScoped<ConcurrencyInterceptor>();
 
+            var cacheType = configuration.GetValue<string>("CacheType"); 
+
+            services.AddMemoryCache();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration.GetConnectionString("Redis");
+                options.InstanceName = "MyAppCache:";
+            });
+
+            if (cacheType?.ToLower() == "redis")
+            {
+                services.AddSingleton<ICacheService, RedisCacheService>();
+            }
+            else
+            {
+                services.AddSingleton<ICacheService, MemoryCacheService>();
+            }
             return services;
         }
     }

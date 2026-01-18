@@ -15,7 +15,6 @@ namespace BaseApp.API.Extentions
 
             app.UseSerilogRequestLogging();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

@@ -1,5 +1,4 @@
-﻿using BaseApp.API.Models;
-using BaseApp.Application.Common.Exceptions;
+﻿using BaseApp.Application.Common.Exceptions;
 using BaseApp.Application.Common.Responses;
 using Serilog;
 using System.Text.Json;
@@ -65,11 +64,6 @@ namespace BaseApp.API.Middlewares
             }
             catch (Exception ex)
             {
-                Log.Error(ex,
-                    "Unhandled exception at {Method} {Path}",
-                    context.Request.Method,
-                    context.Request.Path);
-
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";
 
@@ -93,11 +87,10 @@ namespace BaseApp.API.Middlewares
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
 
-            var response = new ErrorResponse
+            var response = new BaseResponse<object>
             {
-                StatusCode = statusCode,
                 Message = message,
-                Details = details
+                Data = details
             };
 
             await context.Response.WriteAsync(
