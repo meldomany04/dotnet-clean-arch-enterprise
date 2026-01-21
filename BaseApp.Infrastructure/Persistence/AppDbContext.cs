@@ -15,6 +15,7 @@ namespace BaseApp.Infrastructure.Persistence
         }
 
         public DbSet<Product> Products => Set<Product>();
+        public DbSet<Item> Items => Set<Item>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
 
@@ -22,7 +23,5 @@ namespace BaseApp.Infrastructure.Persistence
         {
             optionsBuilder.AddInterceptors(_concurrencyInterceptor);
         }
-
     }
-
 }

@@ -1,6 +1,7 @@
 ﻿using BaseApp.Application.Commands.Products.CreateProduct;
 using BaseApp.Application.Commands.Products.DeleteProduct;
 using BaseApp.Application.Commands.Products.UpdateProduct;
+using BaseApp.Application.Commands.Products.UpdateProductItems;
 using BaseApp.Application.Commands.Products.UpdateProductList;
 using BaseApp.Application.Common.Interfaces;
 using BaseApp.Application.Queries.Products.GetAllProducts;
@@ -45,6 +46,14 @@ namespace BaseApp.API.Controllers
         [HttpPut]
         [Route("list")]
         public async Task<IActionResult> UpdateList(UpdateProductListCommand command)
+        {
+            var id = await _mediator.Send(command);
+            return Ok(id);
+        }
+
+        [HttpPut]
+        [Route("items")]
+        public async Task<IActionResult> UpdateProductItems(UpdateProductItemsCommand command)
         {
             var id = await _mediator.Send(command);
             return Ok(id);

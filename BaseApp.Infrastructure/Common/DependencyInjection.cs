@@ -23,6 +23,7 @@ namespace BaseApp.Infrastructure.Common
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IEmailBackgroundJob, EmailBackgroundJob>();
 
             services.AddSignalR();

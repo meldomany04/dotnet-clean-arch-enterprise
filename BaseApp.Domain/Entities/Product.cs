@@ -6,6 +6,7 @@ namespace BaseApp.Domain.Entities
     {
         public string Name { get; set; } = default!;
         public decimal Price { get; set; }
+        public List<Item> Items { get; set; }
         public bool IsDeleted { get; set; }
     }
 }
