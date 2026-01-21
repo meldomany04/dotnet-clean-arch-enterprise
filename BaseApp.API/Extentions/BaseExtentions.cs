@@ -12,7 +12,7 @@ namespace BaseApp.API.Extentions
         public static IServiceCollection ConfigureBaseServices(this IServiceCollection services)
         {
             services.AddControllers();
-            services.AddFluentValidationAutoValidation();
+            //services.AddFluentValidationAutoValidation();
             services.AddEndpointsApiExplorer();
 
             services.AddApiVersioning(

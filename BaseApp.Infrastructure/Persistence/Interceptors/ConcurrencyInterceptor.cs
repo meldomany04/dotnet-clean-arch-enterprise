@@ -18,7 +18,7 @@ namespace BaseApp.Infrastructure.Persistence.Interceptors
             DbContextEventData eventData,
             InterceptionResult<int> result)
         {
-            ExtractRowVersionFromContext(eventData.Context);
+            ApplyRowVersionsToModifiedEntities(eventData.Context);
             return result;
         }
 
@@ -27,33 +27,55 @@ namespace BaseApp.Infrastructure.Persistence.Interceptors
             InterceptionResult<int> result,
             CancellationToken cancellationToken = default)
         {
-            ExtractRowVersionFromContext(eventData.Context);
+            ApplyRowVersionsToModifiedEntities(eventData.Context);
             return ValueTask.FromResult(result);
         }
 
-        private void ExtractRowVersionFromContext(DbContext context)
+        private void ApplyRowVersionsToModifiedEntities(DbContext context)
         {
-            if (context == null || _httpContextAccessor.HttpContext == null) return;
-
-            if (_httpContextAccessor.HttpContext.Items.TryGetValue("RowVersion", out var rowVersionObj))
-            {
-                if (rowVersionObj is byte[] rowVersion)
-                {
-                    ApplyRowVersionToModifiedEntities(context, rowVersion);
-                }
+            if (context == null || _httpContextAccessor.HttpContext == null)
                 return;
-            }
-        }
 
-        private void ApplyRowVersionToModifiedEntities(DbContext context, byte[] rowVersion)
-        {
-            foreach (var entry in context.ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Modified && e.Entity is BaseEntity))
+            if (!_httpContextAccessor.HttpContext.Items.TryGetValue("RowVersionMap", out var rowVersionMapObj))
+                return;
+
+            if (rowVersionMapObj is not Dictionary<string, Queue<byte[]>> rowVersionMap)
+                return;
+
+            var modifiedEntities = context.ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified && e.Entity is BaseEntity)
+                .ToList();
+
+            foreach (var entry in modifiedEntities)
             {
-                var property = entry.Property(nameof(BaseEntity.RowVersion));
-                if (property != null)
+                var entityTypeName = entry.Entity.GetType().Name.ToLowerInvariant();
+                var rowVersionProperty = entry.Property(nameof(BaseEntity.RowVersion));
+
+                if (rowVersionProperty == null)
+                    continue;
+
+                byte[] rowVersionToApply = null;
+
+                if (rowVersionMap.TryGetValue(entityTypeName, out var queue) && queue.Any())
                 {
-                    property.OriginalValue = rowVersion;
+                    rowVersionToApply = queue.Dequeue();
+                }
+                else if (entityTypeName.EndsWith("s"))
+                {
+                    var singularName = entityTypeName.TrimEnd('s');
+                    if (rowVersionMap.TryGetValue(singularName, out queue) && queue.Any())
+                    {
+                        rowVersionToApply = queue.Dequeue();
+                    }
+                }
+                else if (rowVersionMap.TryGetValue("default", out queue) && queue.Any())
+                {
+                    rowVersionToApply = queue.Dequeue();
+                }
+
+                if (rowVersionToApply != null)
+                {
+                    rowVersionProperty.OriginalValue = rowVersionToApply;
                 }
             }
         }

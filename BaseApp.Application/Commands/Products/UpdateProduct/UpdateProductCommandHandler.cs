@@ -29,6 +29,7 @@ namespace BaseApp.Application.Commands.Products.UpdateProduct
 
             _mapper.Map(request, productDetails);
 
+
             _unitOfWork.Repository<Product>().Update(productDetails);
             await _unitOfWork.SaveChangesAsync();
 

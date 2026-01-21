@@ -2,7 +2,7 @@
 
 namespace BaseApp.Application.Common.Extentions
 {
-    internal sealed class ParameterReplacer : ExpressionVisitor
+    public sealed class ParameterReplacer : ExpressionVisitor
     {
         private readonly ParameterExpression _parameter;
 

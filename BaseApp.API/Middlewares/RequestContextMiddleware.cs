@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 
 namespace BaseApp.API.Middlewares
@@ -27,8 +26,7 @@ namespace BaseApp.API.Middlewares
                 context.Request.Method == "PUT" ||
                 context.Request.Method == "PATCH")
             {
-
-               await ExtractRowVersionFromBody(context);
+                await ExtractRowVersionFromBody(context);
             }
 
             if (context.Request.Method == "DELETE")
@@ -36,7 +34,7 @@ namespace BaseApp.API.Middlewares
                 ExtractRowVersionFromQueryOrHeaders(context);
             }
 
-                await _next(context);
+            await _next(context);
         }
 
         private async Task ExtractRowVersionFromBody(HttpContext context)
@@ -53,20 +51,104 @@ namespace BaseApp.API.Middlewares
                 try
                 {
                     using var jsonDoc = JsonDocument.Parse(body);
-                    var rowVersionProperty = jsonDoc.RootElement.EnumerateObject()
-                        .FirstOrDefault(p =>
-                            p.Name.EndsWith("RowVersion", StringComparison.OrdinalIgnoreCase) ||
-                            p.Name.Equals("RowVersion", StringComparison.OrdinalIgnoreCase));
+                    var rowVersionMap = new Dictionary<string, Queue<byte[]>>(StringComparer.OrdinalIgnoreCase);
 
-                    if (!rowVersionProperty.Equals(default(JsonProperty)))
+                    ExtractRowVersionsRecursive(jsonDoc.RootElement, rowVersionMap);
+
+                    if (rowVersionMap.Any())
                     {
-                        ExtractAndStoreRowVersion(context, rowVersionProperty.Value);
+                        context.Items["RowVersionMap"] = rowVersionMap;
                     }
                 }
                 catch (JsonException)
                 {
                 }
             }
+        }
+
+        private void ExtractRowVersionsRecursive(JsonElement element, Dictionary<string, Queue<byte[]>> rowVersionMap)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in element.EnumerateObject())
+                {
+                    if (property.Name.EndsWith("RowVersion", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var entityName = ExtractEntityName(property.Name);
+
+                        if (TryExtractRowVersion(property.Value, out var rowVersion))
+                        {
+                            if (!rowVersionMap.ContainsKey(entityName))
+                            {
+                                rowVersionMap[entityName] = new Queue<byte[]>();
+                            }
+                            rowVersionMap[entityName].Enqueue(rowVersion);
+                        }
+                    }
+                    else
+                    {
+                        ExtractRowVersionsRecursive(property.Value, rowVersionMap);
+                    }
+                }
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    ExtractRowVersionsRecursive(item, rowVersionMap);
+                }
+            }
+        }
+
+        private string ExtractEntityName(string propertyName)
+        {
+            var entityName = propertyName.Substring(0,
+                propertyName.Length - "RowVersion".Length);
+
+            if (string.IsNullOrEmpty(entityName))
+            {
+                return "default";
+            }
+
+            return entityName.ToLowerInvariant();
+        }
+
+        private bool TryExtractRowVersion(JsonElement value, out byte[] rowVersion)
+        {
+            rowVersion = null;
+
+            if (value.ValueKind == JsonValueKind.String)
+            {
+                var rowVersionString = value.GetString();
+                if (!string.IsNullOrEmpty(rowVersionString))
+                {
+                    try
+                    {
+                        rowVersion = Convert.FromBase64String(rowVersionString);
+                        return true;
+                    }
+                    catch (FormatException)
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (value.ValueKind == JsonValueKind.Array)
+            {
+                try
+                {
+                    rowVersion = value.EnumerateArray()
+                        .Select(e => e.GetByte())
+                        .ToArray();
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         private void ExtractRowVersionFromQueryOrHeaders(HttpContext context)
@@ -79,44 +161,15 @@ namespace BaseApp.API.Middlewares
                     try
                     {
                         var rowVersion = Convert.FromBase64String(rowVersionString);
-                        context.Items["RowVersion"] = rowVersion;
-                        return;
+                        var rowVersionMap = new Dictionary<string, Queue<byte[]>>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["default"] = new Queue<byte[]>(new[] { rowVersion })
+                        };
+                        context.Items["RowVersionMap"] = rowVersionMap;
                     }
                     catch (FormatException)
                     {
                     }
-                }
-            }
-        }
-
-        private void ExtractAndStoreRowVersion(HttpContext context, JsonElement value)
-        {
-            if (value.ValueKind == JsonValueKind.String)
-            {
-                var rowVersionString = value.GetString();
-                if (!string.IsNullOrEmpty(rowVersionString))
-                {
-                    try
-                    {
-                        var rowVersion = Convert.FromBase64String(rowVersionString);
-                        context.Items["RowVersion"] = rowVersion;
-                    }
-                    catch (FormatException)
-                    {
-                    }
-                }
-            }
-            else if (value.ValueKind == JsonValueKind.Array)
-            {
-                try
-                {
-                    var rowVersion = value.EnumerateArray()
-                        .Select(e => e.GetByte())
-                        .ToArray();
-                    context.Items["RowVersion"] = rowVersion;
-                }
-                catch (InvalidOperationException)
-                {
                 }
             }
         }

@@ -18,10 +18,23 @@ namespace BaseApp.Infrastructure.Repositories
         public async Task<T?> GetByIdAsync(int id) => await _context.Set<T>().FindAsync(id);
 
         public async Task<IReadOnlyList<T>> GetAllAsync() => await _context.Set<T>().ToListAsync();
+        
+        public async Task<List<T>> GetListAsync(Expression<Func<T, bool>>? filter = null,
+                                        CancellationToken cancellationToken = default)
+        {
+            var query = _context.Set<T>().AsQueryable();
+
+            if (filter != null)
+                query = query.Where(filter);
+
+            return await query.ToListAsync(cancellationToken);
+        }
 
         public async Task AddAsync(T entity) => await _context.Set<T>().AddAsync(entity);
 
         public void Update(T entity) => _context.Set<T>().Update(entity);
+
+        public void UpdateRange(List<T> entities) => _context.Set<T>().UpdateRange(entities);
 
         public IQueryable<T> GetAll() => _context.Set<T>().AsNoTracking();
 
@@ -56,7 +69,6 @@ namespace BaseApp.Infrastructure.Repositories
 
             return (data, totalRecords);
         }
-
 
         public void Remove(T entity)
         {
