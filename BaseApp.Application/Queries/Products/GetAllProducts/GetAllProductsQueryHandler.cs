@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Application.Common.Responses;
 using BaseApp.Application.DTOs;
 using BaseApp.Domain.Entities;
@@ -29,8 +30,7 @@ namespace BaseApp.Application.Queries.Products.GetAllProducts
                 await _cacheService.SetAsync("test", "Hello");
             }
 
-            //throw new NotFoundException("not found product", 1);
-            var products = await _unitOfWork.Repository<Product>().GetAllAsync();
+            var products = await _unitOfWork.ProductRepository.GetAllProducts();
             return BaseResponse<List<ProductDto>>.Ok(_mapper.Map<List<ProductDto>>(products));
         }
     }

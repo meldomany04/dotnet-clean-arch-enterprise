@@ -1,6 +1,7 @@
 ﻿using BaseApp.Application.Common.Auditing;
 using BaseApp.Application.Common.BackgroundJobs;
 using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Application.Common.Realtime;
 using BaseApp.Infrastructure.Auditing;
 using BaseApp.Infrastructure.BackgroundJobs;

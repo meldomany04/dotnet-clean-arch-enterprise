@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Application.Common.Responses;
 using BaseApp.Application.DTOs;
 using BaseApp.Domain.Entities;
@@ -23,7 +24,7 @@ namespace BaseApp.Application.Queries.Items.GetAllItems
 
         public async Task<BaseResponse<List<ItemDto>>> Handle(GetAllItemsQuery request, CancellationToken cancellationToken)
         {
-            var Items = await _unitOfWork.Repository<Item>().GetAllAsync();
+            var Items = await _unitOfWork.ItemRepository.GetAllItems();
             return BaseResponse<List<ItemDto>>.Ok(_mapper.Map<List<ItemDto>>(Items));
         }
     }

@@ -1,5 +1,5 @@
 ﻿using BaseApp.Application.Common.Exceptions;
-using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,21 +10,17 @@ namespace BaseApp.Infrastructure.Repositories
         private readonly AppDbContext _context;
         private readonly Dictionary<Type, object> _repositories = new();
 
+
+        private IProductRepository? _products;
+        public IProductRepository ProductRepository => _products ??= new ProductRepository(_context);
+
+
+        private IItemRepository? _items;
+        public IItemRepository ItemRepository => _items ??= new ItemRepository(_context);
+
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
-        }
-
-        public IGenericRepository<T> Repository<T>() where T : class
-        {
-            var type = typeof(T);
-
-            if (!_repositories.ContainsKey(type))
-            {
-                _repositories[type] = new GenericRepository<T>(_context);
-            }
-
-            return (IGenericRepository<T>)_repositories[type];
         }
 
         public async Task<int> SaveChangesAsync()

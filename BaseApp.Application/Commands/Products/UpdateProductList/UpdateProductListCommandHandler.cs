@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BaseApp.Application.Common.Exceptions;
 using BaseApp.Application.Common.Extentions;
-using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Application.Common.Realtime;
 using BaseApp.Domain.Entities;
 using MediatR;
@@ -25,20 +25,25 @@ namespace BaseApp.Application.Commands.Products.UpdateProductList
         {
             var productIds = request.Products.Select(p => p.Id).ToList();
 
-            var productDetails = await _unitOfWork.Repository<Product>()
-                .GetListAsync(e => productIds.Contains(e.Id));
+            var productDetails = await _unitOfWork.ProductRepository.GetAllProductsByIds(productIds);
 
-            _mapper.MapCollection(
-                request.Products,
-                productDetails,
-                src => src.Id,
-                dest => dest.Id
-            );
+            foreach (var product in productDetails)
+            {
+                var productToEdit = request.Products.FirstOrDefault(e => e.Id == product.Id);
+                if (productToEdit == null)
+                    throw new NotFoundException(nameof(Product), product.Id);
 
-            _unitOfWork.Repository<Product>().UpdateRange(productDetails);
-            await _unitOfWork.SaveChangesAsync();
+                product.Name = productToEdit.Name;
+                product.Price = productToEdit.Price;
+            }
 
-            return 1;
+            _unitOfWork.ProductRepository.UpdateProducts(productDetails);
+            var result = await _unitOfWork.SaveChangesAsync();
+            if(result > 0)
+            {
+                return productDetails.Count;
+            }
+            return 0;
         }
     }
 }

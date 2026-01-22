@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BaseApp.Application.Common.Exceptions;
 using BaseApp.Application.Common.Extentions;
-using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Application.Common.Responses;
 using BaseApp.Application.DTOs;
 using BaseApp.Domain.Entities;
@@ -23,7 +23,6 @@ namespace BaseApp.Application.Queries.Products.GetProducts
 
         public async Task<PagedResponse<ProductDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
         {
-            //throw new UnauthorizedException();
             Expression<Func<Product, bool>> filter = p => true;
 
             filter = filter
@@ -31,20 +30,11 @@ namespace BaseApp.Application.Queries.Products.GetProducts
                 .AndAlsoIf(request.MinPrice.HasValue, p => p.Price >= request.MinPrice)
                 .AndAlsoIf(request.MaxPrice.HasValue, p => p.Price <= request.MaxPrice);
 
-            var (data, totalRecords) = await _unitOfWork.Repository<Product>()
-                .GetPagedAsync(request.PageNumber, request.PageSize, request.SortBy, request.SortDescending, filter);
+            var (data, totalRecords) = await _unitOfWork.ProductRepository.GetPaged(request.PageNumber, request.PageSize, request.SortBy, request.SortDescending, filter);
 
             var dtoData = _mapper.Map<List<ProductDto>>(data);
 
-            //var dtoData = data.Select(p => new ProductDto
-            //{
-            //    Id = p.Id,
-            //    Name = p.Name,
-            //    Price = p.Price
-            //});
-
             return PagedResponse<ProductDto>.Create(dtoData, request.PageNumber, request.PageSize, totalRecords);
-
         }
     }
 

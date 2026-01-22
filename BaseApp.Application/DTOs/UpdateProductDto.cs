@@ -10,5 +10,6 @@ namespace BaseApp.Application.DTOs
 
         [AutoBindRowVersion]
         public byte[] RowVersion { get; set; }
+        public List<UpdateItemDto> Items { get; set; }
     }
 }

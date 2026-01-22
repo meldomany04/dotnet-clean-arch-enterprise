@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using BaseApp.Application.Common.Exceptions;
-using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Domain.Entities;
 using MediatR;
 
@@ -20,14 +20,15 @@ namespace BaseApp.Application.Commands.Items.CreateItem
 
         public async Task<int> Handle(CreateItemCommand request, CancellationToken cancellationToken)
         {
-            var productExists = await _unitOfWork.Repository<Product>().GetByIdAsync(request.ProductId);
+            var productExists = await _unitOfWork.ProductRepository.GetProductById(request.ProductId);
             if (productExists is null)
                 throw new NotFoundException("Product Id", request.ProductId);
 
-            var Item = _mapper.Map<Item>(request);
-            await _unitOfWork.Repository<Item>().AddAsync(Item);
+            var item = Item.Create(request.Name, request.ProductId);
+
+            await _unitOfWork.ItemRepository.AddItem(item);
             await _unitOfWork.SaveChangesAsync();
-            return Item.Id;
+            return item.Id;
         }
     }
 }

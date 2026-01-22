@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using BaseApp.Application.Common.Exceptions;
-using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Application.Common.Realtime;
-using BaseApp.Domain.Entities;
 using MediatR;
 
 namespace BaseApp.Application.Commands.Products.UpdateProduct
@@ -22,23 +21,26 @@ namespace BaseApp.Application.Commands.Products.UpdateProduct
 
         public async Task<int> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
-            var productDetails = await _unitOfWork.Repository<Product>().GetByIdAsync(request.Id);
+            var productDetails = await _unitOfWork.ProductRepository.GetProductById(request.Id);
             
             if (productDetails == null)
                 throw new NotFoundException("There is no product with the same Id", request.Id);
 
-            _mapper.Map(request, productDetails);
+            productDetails.Name = request.Name;
+            productDetails.Price = request.Price;
 
+            _unitOfWork.ProductRepository.UpdateProduct(productDetails);
+            var result = await _unitOfWork.SaveChangesAsync();
 
-            _unitOfWork.Repository<Product>().Update(productDetails);
-            await _unitOfWork.SaveChangesAsync();
-
-            await _notificationHub.NotifyAllAsync(
-                "ProductCreated",
-                new { request.Name, request.Price }
-            );
-
-            return request.Id;
+            if(result > 0)
+            {
+                await _notificationHub.NotifyAllAsync(
+                    "ProductCreated",
+                    new { request.Name, request.Price }
+                );
+                return productDetails.Id;
+            }
+            return 0;
         }
     }
 }

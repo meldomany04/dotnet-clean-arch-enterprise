@@ -2,13 +2,14 @@
 using BaseApp.Application.DTOs;
 using BaseApp.Domain.Entities;
 
-namespace BaseApp.Application.Common.Mappings.ProductMapping
+namespace BaseApp.Application.Common.Mappings
 {
-    public class ProductProfile : Profile
+    public class ProductMappingProfile : Profile
     {
-        public ProductProfile()
+        public ProductMappingProfile()
         {
             CreateMap<Product, ProductDto>().ReverseMap();
         }
     }
+
 }

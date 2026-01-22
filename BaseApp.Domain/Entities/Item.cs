@@ -12,5 +12,15 @@ namespace BaseApp.Domain.Entities
         public Product Product { get; set; }
 
         public bool IsDeleted { get; set; }
+
+
+        public static Item Create(string name, int productId)
+        {
+            return new Item
+            {
+                Name = name,
+                ProductId = productId
+            };
+        }
     }
 }

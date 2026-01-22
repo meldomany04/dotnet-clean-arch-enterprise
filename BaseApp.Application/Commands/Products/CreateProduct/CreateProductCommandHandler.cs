@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using BaseApp.Application.Common.Exceptions;
-using BaseApp.Application.Common.Interfaces;
+using BaseApp.Application.Common.Interfaces.IRepositories;
 using BaseApp.Application.Common.Realtime;
 using BaseApp.Application.Resources;
 using BaseApp.Domain.Entities;
@@ -16,7 +16,7 @@ namespace BaseApp.Application.Commands.Products.CreateProduct
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly INotificationHub _notificationHub;
 
-        public CreateProductCommandHandler(IUnitOfWork unitOfWork, 
+        public CreateProductCommandHandler(IUnitOfWork unitOfWork,
             IMapper mapper,
             IStringLocalizer<SharedResource> localizer,
             INotificationHub notificationHub)
@@ -29,17 +29,9 @@ namespace BaseApp.Application.Commands.Products.CreateProduct
 
         public async Task<int> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
-            //throw new NotFoundException(_localizer["ProductNotFound"], 1);
-            //throw new NotFoundException("not found product", 1);
-            //var product = new Product
-            //{
-            //    Name = request.Name,
-            //    Price = request.Price
-            //};
+            var product = Product.Create(request.Name, request.Price);
 
-            var product = _mapper.Map<Product>(request);
-
-            await _unitOfWork.Repository<Product>().AddAsync(product);
+            await _unitOfWork.ProductRepository.AddProduct(product);
             await _unitOfWork.SaveChangesAsync();
 
             await _notificationHub.NotifyAllAsync(
