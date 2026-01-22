@@ -24,7 +24,7 @@ namespace BaseApp.Infrastructure.Common
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IProductRepository, ProductRepository>();
+
             services.AddScoped<IEmailBackgroundJob, EmailBackgroundJob>();
 
             services.AddSignalR();
@@ -34,8 +34,7 @@ namespace BaseApp.Infrastructure.Common
 
             services.AddScoped<ConcurrencyInterceptor>();
 
-            var cacheType = configuration.GetValue<string>("CacheType"); 
-
+            var cacheType = configuration.GetValue<string>("CacheType");
             services.AddMemoryCache();
             services.AddStackExchangeRedisCache(options =>
             {
@@ -54,5 +53,4 @@ namespace BaseApp.Infrastructure.Common
             return services;
         }
     }
-
 }
